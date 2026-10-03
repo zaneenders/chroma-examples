@@ -115,14 +115,17 @@ struct BreakoutDemo: Block {
   }
 }
 
-private struct BreakoutBoard: PrimitiveBlock {
+private struct BreakoutBoard: PaintableBlock {
   let state: BreakoutState
   var focusRule: FocusRule { .control }
   var expandsHorizontally: Bool { true }
   var expandsVertically: Bool { true }
   func sizeThatFits(_ proposal: Size, context: BlockContext) -> Size { proposal }
-  @MainActor func draw(into list: inout DrawList, in rect: Rect, context: BlockContext) {
+  @MainActor func register(in rect: Rect, context: BlockContext) {
     _ = context.buttonState(in: rect) { state.toggle() }
+  }
+
+  @MainActor func paint(into list: inout DrawList, in rect: Rect, context: BlockContext) {
     list.fillRect(rect, color: DemoStyle.panel)
     list.pushClip(rect)
     for brick in state.bricks.sorted() {

@@ -67,13 +67,15 @@ struct LifeDemo: Block {
   }
 }
 
-private struct LifeBoard: PrimitiveBlock {
+private struct LifeBoard: PaintableBlock {
   let state: LifeState
   var focusRule: FocusRule { .decorative }
   var expandsHorizontally: Bool { true }
   var expandsVertically: Bool { true }
   func sizeThatFits(_ proposal: Size, context: BlockContext) -> Size { proposal }
-  @MainActor func draw(into list: inout DrawList, in rect: Rect, context: BlockContext) {
+  func register(in rect: Rect, context: BlockContext) {}
+
+  @MainActor func paint(into list: inout DrawList, in rect: Rect, context: BlockContext) {
     let cell = min(rect.size.width, rect.size.height) / Float(state.side)
     list.fillRect(rect, color: DemoStyle.panel)
     list.pushClip(rect)

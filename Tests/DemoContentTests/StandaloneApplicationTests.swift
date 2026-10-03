@@ -24,6 +24,19 @@ struct StandaloneApplicationTests {
       FallingBlocksApplication(state: FallingBlocksState(automaticallyTicks: false)), title: "Chroma — Falling Blocks")
   }
 
+  @Test func enterStartsTheReadyBoardAndResumesAfterPause() throws {
+    let state = FallingBlocksState(automaticallyTicks: false)
+    let ui = try NavigationTestHost(app: FallingBlocksApplication(state: state))
+    #expect(state.phase == .ready)
+    #expect(state.focus.isFocused)
+    ui.press(.enter)
+    #expect(state.phase == .playing)
+    ui.press("p")
+    #expect(state.phase == .paused)
+    ui.press(.enter)
+    #expect(state.phase == .playing)
+  }
+
   @Test func chatRunsIndependently() throws {
     try checkApp(
       ChatApplication(

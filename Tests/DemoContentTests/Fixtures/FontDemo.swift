@@ -99,7 +99,7 @@ extension String {
   }
 }
 
-struct GlyphExplorer: PrimitiveBlock {
+struct GlyphExplorer: PaintableBlock {
   let state: PerformanceDemoState
   static let glyphs = Array(
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?@#$%&*()[]{}ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜàáâãäåèéêëìíîïòóôõöùúûüÇçÑñÝýÿČčŠšŽžĀāĂăĄą"
@@ -114,38 +114,46 @@ struct GlyphExplorer: PrimitiveBlock {
       width: proposal.width, height: Float((Self.glyphs.count + columns - 1) / columns) * cell)
   }
 
-  func draw(into drawList: inout DrawList, in rect: Rect, context: BlockContext) {
+  func register(in rect: Rect, context: BlockContext) {
     let columns = max(1, Int(rect.size.width / cell))
     let rows = (Self.glyphs.count + columns - 1) / columns
     context.withFocusGroup(in: rect, axis: .vertical) {
       for row in 0..<rows {
-        let rowRect = Rect(
-          x: rect.minX, y: rect.minY + Float(row) * cell, width: rect.size.width, height: cell)
+        let rowRect = Rect(x: rect.minX, y: rect.minY + Float(row) * cell, width: rect.size.width, height: cell)
         context.withFocusGroup(in: rowRect, axis: .horizontal) {
           for column in 0..<columns {
             let index = row * columns + column
             guard index < Self.glyphs.count else { break }
-            let box = Rect(
-              x: rowRect.minX + Float(column) * cell, y: rowRect.minY, width: cell, height: cell)
-            let text = String(Self.glyphs[index])
-            if state.inspectedGlyph == text {
-              drawList.fillRect(box, color: context.theme.elevatedSurface)
-            }
-            drawList.strokeRect(box, width: 0.5, color: context.theme.border)
-            drawList.text(
-              text, at: Point(x: box.minX + 10, y: box.minY + 6),
-              color: state.inspectedGlyph == text ? context.theme.accent : context.theme.foreground)
-            context.childScope(index).focusable(in: box, into: &drawList) {
-              state.inspectedGlyph = text
+            let box = Rect(x: rowRect.minX + Float(column) * cell, y: rowRect.minY, width: cell, height: cell)
+            context.childScope(index).registerFocusable(in: box) {
+              state.inspectedGlyph = String(Self.glyphs[index])
             }
           }
         }
       }
     }
   }
+
+  func paint(into drawList: inout DrawList, in rect: Rect, context: BlockContext) {
+    let columns = max(1, Int(rect.size.width / cell))
+    for (index, glyph) in Self.glyphs.enumerated() {
+      let box = Rect(
+        x: rect.minX + Float(index % columns) * cell,
+        y: rect.minY + Float(index / columns) * cell, width: cell, height: cell)
+      let text = String(glyph)
+      if state.inspectedGlyph == text {
+        drawList.fillRect(box, color: context.theme.elevatedSurface)
+      }
+      drawList.strokeRect(box, width: 0.5, color: context.theme.border)
+      drawList.text(
+        text, at: Point(x: box.minX + 10, y: box.minY + 6),
+        color: state.inspectedGlyph == text ? context.theme.accent : context.theme.foreground)
+      context.childScope(index).paintFocusHighlight(in: box, into: &drawList)
+    }
+  }
 }
 
-struct GlyphInspection: PrimitiveBlock {
+struct GlyphInspection: PaintableBlock {
   let glyph: String
 
   var focusRule: FocusRule { .standard }
@@ -154,7 +162,9 @@ struct GlyphInspection: PrimitiveBlock {
     Size(width: 200, height: 240)
   }
 
-  func draw(into drawList: inout DrawList, in rect: Rect, context: BlockContext) {
+  func register(in rect: Rect, context: BlockContext) {}
+
+  func paint(into drawList: inout DrawList, in rect: Rect, context: BlockContext) {
     let origin = Point(x: rect.minX + 16, y: rect.minY + 8)
     for column in 0...20 {
       drawList.fillRect(
@@ -177,7 +187,7 @@ struct GlyphInspection: PrimitiveBlock {
   }
 }
 
-struct TerminalSpecimen: PrimitiveBlock {
+struct TerminalSpecimen: PaintableBlock {
   static let rows = ["╭────╮ ┌────┐ ░▒▓█", "│    │ │    │ ←↑→↓", "╰────╯ └────┘ ⠁⠃⠇⠏"]
 
   var focusRule: FocusRule { .standard }
@@ -186,7 +196,9 @@ struct TerminalSpecimen: PrimitiveBlock {
     Size(width: 360, height: 84)
   }
 
-  func draw(into drawList: inout DrawList, in rect: Rect, context: BlockContext) {
+  func register(in rect: Rect, context: BlockContext) {}
+
+  func paint(into drawList: inout DrawList, in rect: Rect, context: BlockContext) {
     for (row, text) in Self.rows.enumerated() {
       drawList.text(
         text, at: Point(x: rect.minX, y: rect.minY + Float(row) * 28),

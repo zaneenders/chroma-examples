@@ -43,6 +43,16 @@ swift run LifeDemo
 ```
 
 
+Stress three virtualized 100,000-row panes with deeply nested controls. Scroll each
+pane and click **Update all panes** to exercise state invalidation.
+
+```sh
+swift run -c release StressExample
+```
+
+The scene is adapted from Chroma’s [headless stress benchmark](https://github.com/zaneenders/chroma/tree/838b601/Benchmarks#stress-lab-benchmark-and-native-example)
+and included here so all examples build using the remote Chroma dependency.
+
 ## Testing
 
 ```sh

@@ -2,17 +2,15 @@
 import PackageDescription
 
 let demos = [
-  "FallingBlocksDemo", "ChatDemo", "ImageDemo", "SpreadsheetDemo", "BreakoutDemo", "TextEditingDemo", "LifeDemo",
+  "FallingBlocksDemo", "ChatDemo", "ImageDemo", "SpreadsheetDemo",
+  "BreakoutDemo", "TextEditingDemo", "LifeDemo", "StressExample",
 ]
 let package = Package(
   name: "ChromaExamples",
   platforms: [.macOS(.v27)],
   products: demos.map { .executable(name: $0, targets: [$0]) },
   dependencies: [
-    .package(
-      url: "https://github.com/zaneenders/chroma.git",
-      revision: "e46e475"
-    )
+    .package(url: "https://github.com/zaneenders/chroma.git", revision: "1f240b9")
   ],
   targets: demos.map {
     .executableTarget(

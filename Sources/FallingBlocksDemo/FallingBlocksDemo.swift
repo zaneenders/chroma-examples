@@ -134,7 +134,7 @@ struct FallingBlocksDemo: Block {
   }
 }
 
-private struct GameBoard: PrimitiveBlock {
+private struct GameBoard: PaintableBlock {
   let state: FallingBlocksState
   var focusRule: FocusRule { .control }
   var expandsHorizontally: Bool { true }
@@ -142,16 +142,26 @@ private struct GameBoard: PrimitiveBlock {
 
   func sizeThatFits(_ proposal: Size, context: BlockContext) -> Size { proposal }
 
-  @MainActor func draw(into list: inout DrawList, in rect: Rect, context: BlockContext) {
-    let cell = min((rect.size.width - 12) / 10, (rect.size.height - 12) / 20).rounded(.down)
-    guard cell >= 3 else { return }
-    let grid = Rect(
+  private func grid(in rect: Rect, cell: Float) -> Rect {
+    Rect(
       x: rect.minX + (rect.size.width - cell * 10) / 2,
-      y: rect.minY + (rect.size.height - cell * 20) / 2, width: cell * 10, height: cell * 20)
+      y: rect.minY + (rect.size.height - cell * 20) / 2,
+      width: max(0, cell * 10), height: max(0, cell * 20))
+  }
+
+  @MainActor func register(in rect: Rect, context: BlockContext) {
+    let cell = min((rect.size.width - 12) / 10, (rect.size.height - 12) / 20).rounded(.down)
+    let grid = grid(in: rect, cell: cell)
     _ = context.buttonState(in: grid) {
       if state.phase != .playing { state.togglePause() }
       state.focus.focus()
     }
+  }
+
+  @MainActor func paint(into list: inout DrawList, in rect: Rect, context: BlockContext) {
+    let cell = min((rect.size.width - 12) / 10, (rect.size.height - 12) / 20).rounded(.down)
+    guard cell >= 3 else { return }
+    let grid = grid(in: rect, cell: cell)
     list.fillRoundedRect(grid, radius: 5, color: DemoStyle.background)
     list.pushClip(grid)
     for row in 0..<FallingBlocksGame.height {
@@ -211,7 +221,7 @@ private struct GameBoard: PrimitiveBlock {
   }
 }
 
-private struct PiecePreview: PrimitiveBlock {
+private struct PiecePreview: PaintableBlock {
   let pieces: [Tetromino]
   var focusRule: FocusRule { .decorative }
 
@@ -219,7 +229,9 @@ private struct PiecePreview: PrimitiveBlock {
     Size(width: proposal.width, height: 138)
   }
 
-  func draw(into list: inout DrawList, in rect: Rect, context: BlockContext) {
+  func register(in rect: Rect, context: BlockContext) {}
+
+  func paint(into list: inout DrawList, in rect: Rect, context: BlockContext) {
     for (index, piece) in pieces.enumerated() {
       let cells = piece.cells
       let minY = cells.map(\.y).min() ?? 0

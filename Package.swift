@@ -12,7 +12,7 @@ let package = Package(
   products: demos.map { .executable(name: $0, targets: [$0]) },
   dependencies: [
     ProcessInfo.processInfo.environment["CHROMA_LOCAL_PATH"].map { .package(path: $0) }
-      ?? .package(path: "../chroma")
+      ?? .package(url: "https://github.com/zaneenders/chroma.git", branch: "feat/markdown-selection")
   ],
   targets: demos.map {
     .executableTarget(

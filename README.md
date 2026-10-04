@@ -58,3 +58,16 @@ and included here so all examples build using the remote Chroma dependency.
 ```sh
 swift test
 ```
+
+## Markdown
+
+Render headings, lists, quotes, code and bold text with the optional
+`ChromaMarkdown` library. Resize the window to exercise wrapping.
+
+```sh
+swift run MarkdownDemo
+```
+
+The examples currently use the sibling `../chroma` checkout because
+`ChromaMarkdown` is not available at the previously pinned remote revision.
+Set `CHROMA_LOCAL_PATH` to use a different local checkout.
